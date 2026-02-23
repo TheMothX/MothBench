@@ -1,6 +1,7 @@
 \# 🦋 MOTH-BENCH v1.8
 
-![Moth-Bench Main UI](assets/moth_bench_run.png)
+![Moth-Bench Main UI](assets/MOTHBENCH.png)
+![Moth-Bench Scorecard](assets/MOTHBENCH-SCORECARD.png)
 
 *A hardcore benchmark battery for local LLMs, specifically tuned for Ollama and v1/chat/completions endpoints.*
 
