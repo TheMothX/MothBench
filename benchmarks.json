@@ -1,0 +1,12 @@
+[
+  { "name": "GPT-4.1 mini (ref)", "avg_seconds": 3.1 },
+  { "name": "GPT-4o (ref)", "avg_seconds": 4.2 },
+  { "name": "Claude 3.5 Haiku (ref)", "avg_seconds": 4.8 },
+  { "name": "Claude 3.5 Sonnet (ref)", "avg_seconds": 5.8 },
+  { "name": "Gemini 2.0 Flash (ref)", "avg_seconds": 6.1 },
+  { "name": "Mistral Large (ref)", "avg_seconds": 7.4 },
+  { "name": "Llama 3.3 70B (ref)", "avg_seconds": 8.5 },
+  { "name": "DeepSeek V3 (ref)", "avg_seconds": 9.8 },
+  { "name": "Qwen2.5 72B (ref)", "avg_seconds": 11.2 },
+  { "name": "Claude Opus 4.6 (ref)", "avg_seconds": 14.5 }
+]
