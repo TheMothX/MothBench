@@ -170,7 +170,7 @@ Built executable: `dist/moth_bench.exe`
 
 ## 📜 License
 
-MIT License © 2026 Christian Hay
+MIT License © 2026 MothX
 
 ---
 
