@@ -492,6 +492,23 @@ class MothBench(ctk.CTk):
             )
         lb_rows = "".join(rows_html)
 
+        # Bygg detaljert Q&A-seksjon
+        details = results.get("details", [])
+        detail_rows = []
+        for item in details:
+            t_str = f"{item['elapsed']:.2f}s" if item.get("elapsed") is not None else "N/A"
+            q = html.escape(item.get("question", ""))
+            a = html.escape(item.get("answer", "")).replace("\n", "<br>")
+            cat = html.escape(item.get("category", ""))
+            name = html.escape(item.get("name", ""))
+            detail_rows.append(f"""
+<div class="qa-block">
+    <div class="qa-meta">{cat} | {name} &nbsp;—&nbsp; <span class="qa-time">⏱ {t_str}</span></div>
+    <div class="qa-question"><strong>Q:</strong> {q}</div>
+    <div class="qa-answer"><strong>A:</strong> {a}</div>
+</div>""")
+        detail_html = "".join(detail_rows)
+
         return f"""
 <html>
 <head>
@@ -526,6 +543,38 @@ class MothBench(ctk.CTk):
             border-bottom: 1px solid #252540;
             text-align: left;
         }}
+        h2 {{
+            margin-top: 50px;
+            color: #6c5ce7;
+            border-bottom: 1px solid #252540;
+            padding-bottom: 10px;
+        }}
+        .qa-block {{
+            border: 1px solid #252540;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 16px 0;
+            background: #0d0d1a;
+        }}
+        .qa-meta {{
+            font-size: 12px;
+            color: #6c5ce7;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }}
+        .qa-time {{
+            color: #e84393;
+        }}
+        .qa-question {{
+            margin-bottom: 10px;
+            color: #fdcb6e;
+        }}
+        .qa-answer {{
+            color: #55efc4;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }}
     </style>
 </head>
 <body>
@@ -542,6 +591,8 @@ class MothBench(ctk.CTk):
         <tr><th>Rank &amp; Model</th><th>Avg Response Time</th></tr>
         {lb_rows}
     </table>
+    <h2>📋 Detaljerte spørsmål og svar</h2>
+    {detail_html}
 </body>
 </html>
         """.strip()
@@ -598,6 +649,7 @@ class MothBench(ctk.CTk):
 
         times = []
         success = 0
+        details = []
 
         system_prompt = self.system_prompt_box.get("1.0", "end").strip()
 
@@ -611,6 +663,7 @@ class MothBench(ctk.CTk):
             )
             self.after(0, self.update_result, test_tags[i], "RUNNING ...", "pending")
 
+            answer = None
             try:
                 messages = []
                 if system_prompt:
@@ -633,12 +686,37 @@ class MothBench(ctk.CTk):
                     c_tag = "ok"
                     times.append(elapsed)
                     success += 1
+                    try:
+                        answer = r.json()["choices"][0]["message"]["content"]
+                    except Exception:
+                        answer = "(kunne ikke hente svar)"
+                    details.append({
+                        "category": t["c"],
+                        "name": t["n"],
+                        "question": t["q"],
+                        "answer": answer,
+                        "elapsed": elapsed,
+                    })
                 else:
                     res = f"⚠️ E{r.status_code}"
                     c_tag = "fail"
+                    details.append({
+                        "category": t["c"],
+                        "name": t["n"],
+                        "question": t["q"],
+                        "answer": f"FEIL: HTTP {r.status_code}",
+                        "elapsed": None,
+                    })
             except Exception as e:
                 res = f"❌ {type(e).__name__}"
                 c_tag = "fail"
+                details.append({
+                    "category": t["c"],
+                    "name": t["n"],
+                    "question": t["q"],
+                    "answer": f"FEIL: {type(e).__name__}",
+                    "elapsed": None,
+                })
 
             self.after(0, self.update_result, test_tags[i], res, c_tag)
             prog = (i + 1) / len(tests)
@@ -667,6 +745,7 @@ class MothBench(ctk.CTk):
                 "avg_seconds": avg,
                 "success": success,
                 "total": len(tests),
+                "details": details,
             }
             self.after(
                 0,
@@ -675,6 +754,20 @@ class MothBench(ctk.CTk):
                     f"\nDONE: {grade} | AVG: {avg:.2f}s | SUCCESS: {success}/{len(tests)}\n",
                 ),
             )
+
+            # Vis detaljerte svar i loggvinduet
+            def append_details(d=details):
+                self.txt.insert("end", "\n" + "=" * 65 + "\n")
+                self.txt.insert("end", "📋 DETALJERTE RESULTATER\n")
+                self.txt.insert("end", "=" * 65 + "\n")
+                for item in d:
+                    t_str = f"{item['elapsed']:.2f}s" if item["elapsed"] is not None else "N/A"
+                    self.txt.insert("end", f"\n[{item['category']} | {item['name']}]  ⏱ {t_str}\n")
+                    self.txt.insert("end", f"Q: {item['question']}\n", "pending")
+                    self.txt.insert("end", f"A: {item['answer']}\n", "ok")
+                    self.txt.insert("end", "-" * 65 + "\n")
+
+            self.after(0, append_details)
             self.after(0, self.export_scorecard)
 
         self.after(0, lambda: self.btn.configure(state="normal"))
