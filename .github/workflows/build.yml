@@ -34,9 +34,11 @@ jobs:
           path: dist/moth_bench.exe
           if-no-files-found: error
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'Latest Build' }}
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/v') }}
           files: dist/moth_bench.exe
           generate_release_notes: true
