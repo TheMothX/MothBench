@@ -883,11 +883,15 @@ class MothBench(ctk.CTk):
             cat = html.escape(item.get("category", ""))
             name = html.escape(item.get("name", ""))
             detail_rows.append(f"""
-<div class="qa-block">
-    <div class="qa-meta">{cat} | {name} &nbsp;—&nbsp; <span class="qa-time">&#9201; {t_str}</span> &nbsp;{q_badge}</div>
-    <div class="qa-question"><strong>Q:</strong> {q}</div>
-    <div class="qa-answer"><strong>A:</strong> {a}</div>
-</div>""")
+<details class="qa-block">
+    <summary class="qa-summary">
+        <span class="qa-meta">{cat} | {name} &nbsp;—&nbsp; <span class="qa-time">&#9201; {t_str}</span> &nbsp;{q_badge}</span>
+    </summary>
+    <div class="qa-body">
+        <div class="qa-question"><strong>Q:</strong> {q}</div>
+        <div class="qa-answer"><strong>A:</strong> {a}</div>
+    </div>
+</details>""")
         detail_html = "".join(detail_rows)
 
         return f"""
@@ -933,22 +937,53 @@ class MothBench(ctk.CTk):
         .qa-block {{
             border: 1px solid #252540;
             border-radius: 10px;
-            padding: 20px;
             margin: 16px 0;
             background: #0d0d1a;
+            overflow: hidden;
+        }}
+        .qa-block[open] {{
+            border-color: #6c5ce7;
+        }}
+        .qa-summary {{
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }}
+        .qa-summary::-webkit-details-marker {{
+            display: none;
+        }}
+        .qa-summary::before {{
+            content: "\\25B6";
+            font-size: 10px;
+            color: #6c5ce7;
+            margin-right: 10px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }}
+        .qa-block[open] > .qa-summary::before {{
+            transform: rotate(90deg);
+        }}
+        .qa-summary:hover {{
+            background: #14142a;
         }}
         .qa-meta {{
             font-size: 12px;
             color: #6c5ce7;
-            margin-bottom: 8px;
             font-weight: bold;
             text-transform: uppercase;
         }}
         .qa-time {{
             color: #e84393;
         }}
+        .qa-body {{
+            padding: 0 20px 20px 40px;
+            border-top: 1px solid #252540;
+        }}
         .qa-question {{
-            margin-bottom: 10px;
+            margin: 14px 0 10px 0;
             color: #fdcb6e;
         }}
         .qa-answer {{
